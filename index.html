@@ -76,15 +76,24 @@ ol{margin:0;padding-left:1.4em;display:grid;gap:10px;max-width:68ch}
 ol li::marker{font-family:var(--mono);color:var(--muted)}
 ol.terms li b{font-weight:600}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+
+a{color:var(--north);text-underline-offset:2px}
+a:hover{text-decoration-thickness:2px}
+.sitenav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13.5px}
+.sitenav a{padding:6px 10px;border:1px solid var(--grid);border-radius:6px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.sitenav a[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sitefoot{border-top:1px solid var(--grid);padding-top:16px;color:var(--muted);font-size:13.5px;max-width:80ch;display:grid;gap:6px}
+.sitefoot p{margin:0}
 </style>
 
 </head>
 <body>
 <main class="wrap">
+  <nav class="sitenav" aria-label="Pages"><a href="https://sarvparteek.github.io/parker-spiral-3d/" aria-current="page">Parker spiral</a><a href="https://sarvparteek.github.io/parker-spiral-3d/current-sheet/">Heliospheric current sheet</a></nav>
   <header>
     <span class="eyebrow">Interplanetary magnetic field · Parker model</span>
     <h1>Parker Spiral in 3D</h1>
-    <p class="lede">Field lines from solar wind leaving at latitude +λ (north) and −λ (south) at the same time, drawn in three dimensions. Like the UCLA tool, every setting of λ plots both hemispheres. Drag to turn the scene. The two grey walls show the same shadows as the x-y and x-z panels in the UCLA tool, so you can match the 3D shape to each flat view.</p>
+    <p class="lede">Field lines from solar wind leaving at latitude +λ (north) and −λ (south) at the same time, drawn in three dimensions. Every setting of λ plots both hemispheres. Drag to turn the scene. The two grey walls show the shadows of the field lines on the x-y and x-z planes. These are the same two views as the flat panels in UCLA's <a href="https://spacephysics.ucla.edu/SolarWind/ParkerSpiral.html">Parker Spiral Model</a> module, so you can match the 3D shape to each flat view.</p>
   </header>
 
   <div class="stage">
@@ -173,6 +182,10 @@ ol.terms li b{font-weight:600}
       </ol>
     </section>
   </div>
+  <footer class="sitefoot">
+    <p>These pages are 3D companions to the interactive modules at <a href="https://spacephysics.ucla.edu/">UCLA Space Physics</a>: <a href="https://spacephysics.ucla.edu/SolarWind/ParkerSpiral.html">Solar Wind: Parker Spiral Model</a> and <a href="https://www.spacephysics.ucla.edu/SolarWind/NeutralSheetStructure.html">Solar Wind: Neutral Sheet Model, 3-D Structure</a>. Those modules accompany the textbook <a href="https://www.cambridge.org/spacephysics">Space Physics: An Introduction</a> by Russell, Luhmann and Strangeway.</p>
+    <p>Source code: <a href="https://github.com/sarvparteek/parker-spiral-3d">github.com/sarvparteek/parker-spiral-3d</a>.</p>
+  </footer>
 </main>
 
 <script>

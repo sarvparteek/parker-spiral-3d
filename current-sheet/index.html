@@ -73,15 +73,24 @@ dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabula
 .checks{display:grid;gap:10px}
 ol{margin:0;padding-left:1.4em;display:grid;gap:10px;max-width:72ch}
 ol li::marker{font-family:var(--mono);color:var(--muted)}
+
+a{color:var(--sheet);text-underline-offset:2px}
+a:hover{text-decoration-thickness:2px}
+.sitenav{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13.5px}
+.sitenav a{padding:6px 10px;border:1px solid var(--grid);border-radius:6px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.sitenav a[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sitefoot{border-top:1px solid var(--grid);padding-top:16px;color:var(--muted);font-size:13.5px;max-width:80ch;display:grid;gap:6px}
+.sitefoot p{margin:0}
 </style>
 
 </head>
 <body>
 <main class="wrap">
+  <nav class="sitenav" aria-label="Pages"><a href="https://sarvparteek.github.io/parker-spiral-3d/">Parker spiral</a><a href="https://sarvparteek.github.io/parker-spiral-3d/current-sheet/" aria-current="page">Heliospheric current sheet</a></nav>
   <header>
     <span class="eyebrow">Heliospheric current sheet · tilted dipole + quadrupole</span>
     <h1>Ballerina Skirt Explorer</h1>
-    <p class="lede">The current sheet separates outward-pointing field from inward-pointing field. On the Sun it is a wavy line. The solar wind carries that line outward while the Sun turns, and the line sweeps out a wavy sheet. Tilt sets how high the waves go. Wind speed sets how far apart they are.</p>
+    <p class="lede">The current sheet separates outward-pointing field from inward-pointing field. On the Sun it is a wavy line. The solar wind carries that line outward while the Sun turns, and the line sweeps out a wavy sheet. Tilt sets how high the waves go. Wind speed sets how far apart they are. The flat version of this model is UCLA's <a href="https://www.spacephysics.ucla.edu/SolarWind/NeutralSheetStructure.html">Neutral Sheet Model, 3-D Structure</a> module.</p>
   </header>
 
   <div class="stage">
@@ -145,7 +154,7 @@ ol li::marker{font-family:var(--mono);color:var(--muted)}
         <span><span class="sw sheet"></span>Neutral line</span>
         <span><span class="sw obs"></span>What the observer samples</span>
       </div>
-      <p class="cap">Same axes as the UCLA tool's left panel. This is before any wind has blown, so wind speed cannot change it.</p>
+      <p class="cap">Same axes as the left panel of UCLA's <a href="https://www.spacephysics.ucla.edu/SolarWind/NeutralSheetStructure.html">Neutral Sheet Model</a> module. This is the pattern on the Sun before the wind carries it outward, so wind speed does not change it.</p>
     </div>
     <div class="card">
       <p class="cardtitle">What a spacecraft at 1 AU measures</p>
@@ -155,7 +164,7 @@ ol li::marker{font-family:var(--mono);color:var(--muted)}
   </div>
 
   <section class="checks">
-    <h2>Check against your assignment plots</h2>
+    <h2>Things to try</h2>
     <ol>
       <li>Set q to 0. Compare α = 10° and α = 25° in the <b>Side (x-z)</b> view. What changes? Read "highest latitude the sheet reaches". How does it compare with α?</li>
       <li>Hold α fixed and move V from 200 to 800 km/s. What happens to the spacing between folds, and to the source-surface map?</li>
@@ -164,6 +173,10 @@ ol li::marker{font-family:var(--mono);color:var(--muted)}
       <li>Raise q slowly from 0. At what point does the sector count jump from 2 to 4? What does the neutral line look like when it does?</li>
     </ol>
   </section>
+  <footer class="sitefoot">
+    <p>These pages are 3D companions to the interactive modules at <a href="https://spacephysics.ucla.edu/">UCLA Space Physics</a>: <a href="https://spacephysics.ucla.edu/SolarWind/ParkerSpiral.html">Solar Wind: Parker Spiral Model</a> and <a href="https://www.spacephysics.ucla.edu/SolarWind/NeutralSheetStructure.html">Solar Wind: Neutral Sheet Model, 3-D Structure</a>. Those modules accompany the textbook <a href="https://www.cambridge.org/spacephysics">Space Physics: An Introduction</a> by Russell, Luhmann and Strangeway.</p>
+    <p>Source code: <a href="https://github.com/sarvparteek/parker-spiral-3d">github.com/sarvparteek/parker-spiral-3d</a>.</p>
+  </footer>
 </main>
 
 <script>
