@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Parker Spiral in 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one working bench — the 3D scene on the left, the instrument panel on the right, exercises underneath. */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --ink:#15202C; --muted:#5A6878; --grid:#CDD5DF; --wall:#E9EDF3;
+  --north:#C8571B; --south:#16788A; --axisdist:#6D44C9; --height:#B81E58; --sun:#E9A100;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D131A; --surface:#141C26; --ink:#E5EBF1; --muted:#90A0B1; --grid:#2A3746; --wall:#18222E;
+    --north:#FF9A52; --south:#4BC4D8; --axisdist:#A88BFA; --height:#F2709A; --sun:#FFC845;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D131A; --surface:#141C26; --ink:#E5EBF1; --muted:#90A0B1; --grid:#2A3746; --wall:#18222E;
+  --north:#FF9A52; --south:#4BC4D8; --axisdist:#A88BFA; --height:#F2709A; --sun:#FFC845;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;gap:6px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:500;font-size:clamp(30px,4.2vw,42px);line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:500;font-size:24px;margin:0;text-wrap:balance}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:880px){.stage{grid-template-columns:minmax(0,1fr)}}
+.viewport{position:relative;background:var(--surface);border:1px solid var(--grid);border-radius:10px;overflow:hidden;min-width:0}
+canvas{display:block;width:100%;aspect-ratio:1/1;max-width:100%;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+.viewbtns{position:absolute;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hint{position:absolute;left:14px;bottom:10px;margin:0;font-family:var(--mono);font-size:11px;color:var(--muted);pointer-events:none}
+button{font:500 13px/1 var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--grid);border-radius:6px;padding:8px 11px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--north);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.panel{display:grid;gap:22px;min-width:0}
+.group{display:grid;gap:12px}
+.group h3{margin:0;font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ctl{display:grid;gap:4px}
+.ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctl label{font-weight:500}
+.ctl output{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--north);margin:0}
+.checks{display:grid;gap:8px}
+.checks label{display:flex;gap:9px;align-items:center;cursor:pointer}
+.checks input{accent-color:var(--north);width:16px;height:16px;margin:0}
+.play{justify-self:start;padding:9px 14px}
+dl{margin:0;display:grid;grid-template-columns:auto auto;gap:7px 12px;align-items:baseline}
+dt{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}
+dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px}
+.sw{width:14px;height:3px;border-radius:2px;flex:none;background:var(--muted)}
+.sw.north{background:var(--north)} .sw.south{background:var(--south)} .sw.axis{background:var(--axisdist)} .sw.height{background:var(--height)}
+.sw.dot{width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.legend{display:grid;gap:6px;font-size:13.5px}
+.legend span{display:flex;gap:8px;align-items:center}
+.lower{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:880px){.lower{grid-template-columns:minmax(0,1fr)}}
+.lower section{display:grid;gap:10px;min-width:0}
+ol{margin:0;padding-left:1.4em;display:grid;gap:10px;max-width:68ch}
+ol li::marker{font-family:var(--mono);color:var(--muted)}
+ol.terms li b{font-weight:600}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <span class="eyebrow">Interplanetary magnetic field · Parker model</span>
+    <h1>Parker Spiral in 3D</h1>
+    <p class="lede">Field lines from the solar wind at one latitude, drawn in three dimensions. Drag to turn the scene. The two grey walls show the same shadows as the x-y and x-z panels in the UCLA tool, so you can match the 3D shape to each flat view.</p>
+  </header>
+
+  <div class="stage">
+    <div class="viewport" id="viewport">
+      <canvas id="scene" aria-label="3D view of Parker spiral field lines"></canvas>
+      <div class="viewbtns" role="group" aria-label="Camera">
+        <button id="v3d" aria-pressed="true">3D</button>
+        <button id="vside" aria-pressed="false">Side (x-z)</button>
+        <button id="vtop" aria-pressed="false">Top (x-y)</button>
+      </div>
+      <p class="hint">Drag to rotate</p>
+    </div>
+
+    <aside class="panel">
+      <div class="group">
+        <h3>Solar wind</h3>
+        <div class="ctl">
+          <div class="row"><label for="lat">Latitude λ</label><output id="latOut"></output></div>
+          <input id="lat" type="range" min="0" max="90" step="1" value="45">
+        </div>
+        <div class="ctl">
+          <div class="row"><label for="vel">Wind speed V</label><output id="velOut"></output></div>
+          <input id="vel" type="range" min="200" max="1000" step="10" value="400">
+        </div>
+        <div class="ctl">
+          <div class="row"><label for="rmax">Trace out to r</label><output id="rmaxOut"></output></div>
+          <input id="rmax" type="range" min="0.2" max="2" step="0.05" value="1">
+        </div>
+        <div class="ctl">
+          <div class="row"><label for="nlines">Field lines per cone</label><output id="nOut"></output></div>
+          <input id="nlines" type="range" min="4" max="24" step="1" value="12">
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Show</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="south" checked> Southern cone (−λ)</label>
+          <label><input type="checkbox" id="cone" checked> Cone surface</label>
+          <label><input type="checkbox" id="shadows" checked> Shadows on x-y and x-z walls</label>
+          <label><input type="checkbox" id="measure" checked> Measurements at the tip</label>
+        </div>
+        <button class="play" id="play" aria-pressed="false">Play rotation</button>
+      </div>
+
+      <div class="group">
+        <h3>At the tip of the marked line</h3>
+        <dl>
+          <dt><span class="sw"></span>Distance from Sun r</dt><dd id="rR"></dd>
+          <dt><span class="sw axis"></span>Distance to rotation axis</dt><dd id="rD"></dd>
+          <dt><span class="sw height"></span>Height above equator</dt><dd id="rH"></dd>
+          <dt><span class="sw north"></span>Garden-hose angle ψ</dt><dd id="rPsi"></dd>
+        </dl>
+      </div>
+
+      <div class="group">
+        <h3>Key</h3>
+        <div class="legend">
+          <span><span class="sw north"></span>Field lines leaving at +λ (north)</span>
+          <span><span class="sw south"></span>Field lines leaving at −λ (south)</span>
+          <span><span class="sw dot"></span>Plasma parcels (when playing)</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="lower">
+    <section>
+      <h2>Things to try</h2>
+      <ol>
+        <li>Set λ to 0 and click <b>Side (x-z)</b>. Why does the spiral turn into a straight line? Then click <b>Top (x-y)</b>.</li>
+        <li>Keep the cone surface on and sweep λ from 0 to 90. What does the cone turn into at each end? What do those two shapes look like from the side?</li>
+        <li>Set λ to 80 and r to 1. Read the distance to the axis and the height. Which trig function of λ gives each one? Which wall shows which?</li>
+        <li>Fix V and note ψ at λ = 0, 45 and 80. Divide each tan ψ by the value at λ = 0. What do you get?</li>
+        <li>Press <b>Play rotation</b>. Each parcel moves straight outward and never changes longitude. Why do the parcels still end up lying along a spiral? Why is that spiral looser at high latitude? (Think about how fast the footpoint moves.)</li>
+      </ol>
+    </section>
+    <section>
+      <h2>Terms</h2>
+      <ol class="terms">
+        <li><b>Latitude λ</b>: angle measured up from the Sun's equator. 0° is the equator, 90° is the pole.</li>
+        <li><b>Rotation axis</b>: the z-axis here. The Sun spins about it once every 25.4 days (sidereal).</li>
+        <li><b>Footpoint</b>: where a field line is anchored on the Sun. It turns with the Sun.</li>
+        <li><b>Garden-hose angle ψ</b>: the angle between the field line and the straight-out (radial) direction at a given point.</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  const OMEGA = 2.865e-6;          // sidereal solar rotation, rad/s
+  const AU_KM = 1.496e8;           // km per AU
+  const OMEGA_SIM = 2*Math.PI/16;  // on-screen rotation: one turn per 16 s
+  const VIEWS = { v3d:[-0.62,0.40], vside:[0,0], vtop:[0,Math.PI/2] };
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const $ = id => document.getElementById(id);
+  const canvas = $('scene'), ctx = canvas.getContext('2d');
+  const S = { lat:45, v:400, rmax:1, n:12, south:true, cone:true, shadows:true, measure:true,
+              playing:false, alpha:0, yaw:VIEWS.v3d[0], pitch:VIEWS.v3d[1] };
+  let C = {}, size = 600, dpr = 1, dirty = true, camAnim = null, parcels = [], simT = 0, lastLaunch = -1, lastFrame = null;
+
+  function readColors(){
+    const cs = getComputedStyle(document.documentElement);
+    ['bg','surface','ink','muted','grid','wall','north','south','axisdist','height','sun'].forEach(k => C[k] = cs.getPropertyValue('--'+k).trim());
+    dirty = true;
+  }
+
+  // ---------- geometry ----------
+  const kappa = () => OMEGA*AU_KM/S.v;               // azimuth wound per AU of radius (rad/AU)
+  const W = () => S.rmax*1.15;
+  function line(phi0, sgn){
+    const lam = sgn*S.lat*Math.PI/180, c = Math.cos(lam), s = Math.sin(lam), k = kappa();
+    const pts = [], M = 160;
+    for(let i=0;i<=M;i++){ const r = S.rmax*i/M, ph = phi0 - k*r; pts.push([r*c*Math.cos(ph), r*c*Math.sin(ph), r*s]); }
+    return pts;
+  }
+  function proj(p){
+    const ca=Math.cos(S.yaw), sa=Math.sin(S.yaw), ce=Math.cos(S.pitch), se=Math.sin(S.pitch);
+    const x1 = p[0]*ca + p[1]*sa, y1 = -p[0]*sa + p[1]*ca;
+    const X = x1, Y = p[2]*ce + y1*se, D = y1*ce - p[2]*se;
+    const sc = size*0.5/(W()*1.62);
+    return [size/2 + X*sc, size/2 - Y*sc, D];
+  }
+
+  // ---------- drawing helpers ----------
+  function poly(pts, color, width, alpha, dash){
+    if(pts.length<2) return;
+    ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.globalAlpha=alpha; ctx.lineJoin='round'; ctx.lineCap='round';
+    if(dash) ctx.setLineDash(dash);
+    ctx.beginPath(); pts.forEach((p,i)=>{ const q=proj(p); i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]); }); ctx.stroke(); ctx.restore();
+  }
+  function label(p, text, color, dx=6, dy=-6, align='left'){
+    const q = proj(p); ctx.save(); ctx.font='500 12px "IBM Plex Mono", ui-monospace, monospace';
+    ctx.fillStyle=color; ctx.textAlign=align; ctx.textBaseline='middle';
+    ctx.lineWidth=4; ctx.strokeStyle=C.surface; ctx.globalAlpha=0.9; ctx.strokeText(text,q[0]+dx,q[1]+dy);
+    ctx.globalAlpha=1; ctx.fillText(text,q[0]+dx,q[1]+dy); ctx.restore();
+  }
+  function wall(corners, name, labelPt){
+    ctx.save(); ctx.fillStyle=C.wall; ctx.globalAlpha=0.75; ctx.beginPath();
+    corners.forEach((p,i)=>{const q=proj(p); i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);}); ctx.closePath(); ctx.fill(); ctx.restore();
+    poly([...corners, corners[0]], C.grid, 1, 1);
+    label(labelPt, name, C.muted, 4, 0);
+  }
+  function gridStep(){ return S.rmax<=0.6?0.1:S.rmax<=1.2?0.25:0.5; }
+
+  function lineSet(){
+    const out=[]; const n=S.n;
+    for(let i=0;i<n;i++){
+      const phi0 = 2*Math.PI*i/n + S.alpha;
+      out.push({pts:line(phi0, 1), color:C.north, marked:i===0, phi0});
+      if(S.south && S.lat>0) out.push({pts:line(phi0,-1), color:C.south, marked:false, phi0});
+    }
+    return out;
+  }
+
+  function draw(){
+    const w=W(), step=gridStep();
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle=C.surface; ctx.fillRect(0,0,size,size);
+    const lines = lineSet();
+
+    // walls + shadows
+    if(S.shadows){
+      wall([[-w,-w,-w],[w,-w,-w],[w,w,-w],[-w,w,-w]], 'x-y plane', [-w,-w,-w]);
+      wall([[-w,w,-w],[w,w,-w],[w,w,w],[-w,w,w]], 'x-z plane', [-w,w,w]);
+      for(let g=-Math.floor(w/step)*step; g<=w+1e-9; g+=step){
+        poly([[g,-w,-w],[g,w,-w]], C.grid, 0.6, 0.6); poly([[-w,g,-w],[w,g,-w]], C.grid, 0.6, 0.6);
+        poly([[g,w,-w],[g,w,w]], C.grid, 0.6, 0.6);  poly([[-w,w,g],[w,w,g]], C.grid, 0.6, 0.6);
+      }
+      lines.forEach(L=>{
+        poly(L.pts.map(p=>[p[0],p[1],-w]), L.color, 1.3, 0.55);
+        poly(L.pts.map(p=>[p[0],w,p[2]]), L.color, 1.3, 0.55);
+      });
+    }
+
+    // axes
+    poly([[-w,0,0],[w,0,0]], C.grid, 1, 1); poly([[0,-w,0],[0,w,0]], C.grid, 1, 1);
+    poly([[0,0,-w],[0,0,w]], C.muted, 1.2, 0.9, [5,5]);
+    label([w,0,0],'x',C.muted,6,0); label([0,w,0],'y',C.muted,6,0); label([0,0,w],'rotation axis (z)',C.muted,6,-2);
+    // equator ring
+    const eq=[]; for(let j=0;j<=96;j++){const a=2*Math.PI*j/96; eq.push([S.rmax*Math.cos(a),S.rmax*Math.sin(a),0]);}
+    poly(eq, C.grid, 1, 0.9, [2,4]);
+
+    // cone surface
+    if(S.cone){
+      const sgns = S.south && S.lat>0 ? [1,-1] : [1];
+      sgns.forEach(sg=>{
+        const lam=sg*S.lat*Math.PI/180, c=Math.cos(lam), s=Math.sin(lam), col = sg>0?C.north:C.south;
+        for(let j=0;j<24;j++){ const a=2*Math.PI*j/24; poly([[0,0,0],[S.rmax*c*Math.cos(a),S.rmax*c*Math.sin(a),S.rmax*s]], col, 0.8, 0.18); }
+        const rim=[]; for(let j=0;j<=96;j++){const a=2*Math.PI*j/96; rim.push([S.rmax*c*Math.cos(a),S.rmax*c*Math.sin(a),S.rmax*s]);}
+        poly(rim, col, 1, 0.35);
+      });
+    }
+
+    // field lines, depth-sorted in chunks
+    const chunks=[];
+    lines.forEach(L=>{
+      for(let i=0;i<L.pts.length-1;i+=8){
+        const seg=L.pts.slice(i, Math.min(i+9, L.pts.length));
+        const mid=proj(seg[Math.floor(seg.length/2)]);
+        chunks.push({seg, d:mid[2], color:L.color, width:L.marked&&S.measure?3.2:2});
+      }
+    });
+    chunks.push({sun:true, d:0});
+    chunks.sort((a,b)=>b.d-a.d);
+    const span = w*1.8;
+    chunks.forEach(ch=>{
+      if(ch.sun){
+        const q=proj([0,0,0]); ctx.save();
+        ctx.fillStyle=C.sun; ctx.globalAlpha=0.25; ctx.beginPath(); ctx.arc(q[0],q[1],13,0,2*Math.PI); ctx.fill();
+        ctx.globalAlpha=1; ctx.beginPath(); ctx.arc(q[0],q[1],7,0,2*Math.PI); ctx.fill(); ctx.restore(); return;
+      }
+      const a = 0.55 + 0.45*Math.min(1, Math.max(0, 0.5 - ch.d/span));
+      poly(ch.seg, ch.color, ch.width, a);
+    });
+
+    // parcels
+    if(S.playing){
+      const Vsim = (S.v/AU_KM)*(OMEGA_SIM/OMEGA);
+      const lam=S.lat*Math.PI/180, c=Math.cos(lam), s=Math.sin(lam);
+      parcels.forEach(P=>{
+        const r=(simT-P.t0)*Vsim; if(r>S.rmax) return;
+        const pos=[r*c*Math.cos(P.phi), r*c*Math.sin(P.phi), r*s];
+        poly([[0,0,0],pos], C.ink, 0.8, 0.18);
+        const q=proj(pos); ctx.save(); ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(q[0],q[1],3.4,0,2*Math.PI); ctx.fill(); ctx.restore();
+      });
+    }
+
+    // measurements on the marked line
+    if(S.measure){
+      const L=lines[0], P=L.pts[L.pts.length-1];
+      const A=[0,0,P[2]], E=[P[0],P[1],0];
+      poly([[0,0,0],P], C.ink, 1, 0.55, [3,4]);
+      poly([P,A], C.axisdist, 2.6, 1); poly([P,E], C.height, 2.6, 1);
+      const d=Math.hypot(P[0],P[1]), h=P[2];
+      label([(P[0]+A[0])/2,(P[1]+A[1])/2,(P[2]+A[2])/2], d.toFixed(2)+' AU', C.axisdist, 0, -10, 'center');
+      if(h>0.02) label([(P[0]+E[0])/2,(P[1]+E[1])/2,(P[2]+E[2])/2], h.toFixed(2)+' AU', C.height, 8, 0);
+      // garden-hose angle
+      const rn=Math.hypot(...P);
+      if(rn>0){
+        const rh=P.map(v=>v/rn);
+        const k=kappa(), lam=S.lat*Math.PI/180, c=Math.cos(lam), ph=L.phi0 - k*S.rmax;
+        const t=[c*Math.cos(ph)+S.rmax*c*k*Math.sin(ph), c*Math.sin(ph)-S.rmax*c*k*Math.cos(ph), Math.sin(lam)];
+        const tr=t[0]*rh[0]+t[1]*rh[1]+t[2]*rh[2];
+        const perp=[t[0]-tr*rh[0], t[1]-tr*rh[1], t[2]-tr*rh[2]], pm=Math.hypot(...perp);
+        const psi=Math.atan2(pm, tr), rho=0.2*S.rmax;
+        poly([P,[P[0]+rh[0]*rho*1.4,P[1]+rh[1]*rho*1.4,P[2]+rh[2]*rho*1.4]], C.ink, 1.3, 0.8, [4,3]);
+        if(pm>1e-6){
+          const e=perp.map(v=>v/pm), tn=Math.hypot(...t), th=t.map(v=>v/tn);
+          poly([P,[P[0]+th[0]*rho*1.4,P[1]+th[1]*rho*1.4,P[2]+th[2]*rho*1.4]], C.north, 2.4, 1);
+          const arc=[]; for(let j=0;j<=24;j++){const u=psi*j/24; arc.push([P[0]+rho*(Math.cos(u)*rh[0]+Math.sin(u)*e[0]), P[1]+rho*(Math.cos(u)*rh[1]+Math.sin(u)*e[1]), P[2]+rho*(Math.cos(u)*rh[2]+Math.sin(u)*e[2])]);}
+          poly(arc, C.ink, 1.4, 0.9);
+          const m=arc[12]; label(m, 'ψ', C.ink, 8, 0);
+        }
+      }
+    }
+
+    // caption
+    ctx.save(); ctx.font='500 12px "IBM Plex Mono", ui-monospace, monospace'; ctx.fillStyle=C.muted; ctx.textBaseline='top';
+    ctx.fillText(`λ = ${S.lat}°   V = ${S.v} km/s   r ≤ ${S.rmax.toFixed(2)} AU`, 14, 14); ctx.restore();
+  }
+
+  function updateReadouts(){
+    $('latOut').textContent = S.lat+'°';
+    $('velOut').textContent = S.v+' km/s';
+    $('rmaxOut').textContent = S.rmax.toFixed(2)+' AU';
+    $('nOut').textContent = S.n;
+    const lam=S.lat*Math.PI/180, r=S.rmax;
+    const d=r*Math.cos(lam), h=r*Math.sin(lam);
+    // angle between tangent and radial: tan ψ = (perpendicular)/(radial) of dP/dr
+    const psi=Math.atan(r*Math.cos(lam)*kappa())*180/Math.PI;
+    $('rR').textContent = r.toFixed(2)+' AU';
+    $('rD').textContent = d.toFixed(3)+' AU';
+    $('rH').textContent = h.toFixed(3)+' AU';
+    $('rPsi').textContent = psi.toFixed(1)+'°';
+  }
+
+  // ---------- sizing & theme ----------
+  function resize(){
+    const w = canvas.clientWidth || 600; dpr = window.devicePixelRatio || 1; size = w;
+    canvas.width = Math.round(w*dpr); canvas.height = Math.round(w*dpr); dirty = true;
+  }
+  new ResizeObserver(resize).observe($('viewport'));
+  if(window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+  new MutationObserver(readColors).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+  // ---------- controls ----------
+  function bindRange(id, key, parse){
+    $(id).addEventListener('input', e=>{ S[key]=parse(e.target.value); parcels=[]; updateReadouts(); dirty=true; });
+  }
+  bindRange('lat','lat',v=>parseInt(v,10)); bindRange('vel','v',v=>parseInt(v,10));
+  bindRange('rmax','rmax',parseFloat); bindRange('nlines','n',v=>parseInt(v,10));
+  ['south','cone','shadows','measure'].forEach(id=>$(id).addEventListener('change', e=>{ S[id]=e.target.checked; dirty=true; }));
+  $('play').addEventListener('click', ()=>{
+    S.playing=!S.playing; $('play').setAttribute('aria-pressed', S.playing); $('play').textContent = S.playing?'Pause rotation':'Play rotation';
+    if(!S.playing) parcels=[]; lastFrame=null; dirty=true;
+  });
+  function setPressed(id){ Object.keys(VIEWS).forEach(k=>$(k).setAttribute('aria-pressed', k===id)); }
+  Object.keys(VIEWS).forEach(id=>$(id).addEventListener('click', ()=>{
+    setPressed(id); const [y,p]=VIEWS[id];
+    // unwrap yaw to the nearest equivalent angle
+    let y0=S.yaw; while(y-y0>Math.PI) y0+=2*Math.PI; while(y0-y>Math.PI) y0-=2*Math.PI; S.yaw=y0;
+    if(reduceMotion){ S.yaw=y; S.pitch=p; dirty=true; return; }
+    camAnim={from:[S.yaw,S.pitch], to:[y,p], t0:performance.now(), dur:550};
+  }));
+
+  let drag=null;
+  canvas.addEventListener('pointerdown', e=>{ drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId); camAnim=null; setPressed(''); });
+  canvas.addEventListener('pointermove', e=>{
+    if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag={x:e.clientX,y:e.clientY};
+    S.yaw -= dx*0.008; S.pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, S.pitch + dy*0.008)); dirty=true;
+  });
+  const endDrag=()=>{ drag=null; };
+  canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+
+  // ---------- loop ----------
+  function frame(now){
+    if(camAnim){
+      const u=Math.min(1,(now-camAnim.t0)/camAnim.dur), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+      S.yaw=camAnim.from[0]+(camAnim.to[0]-camAnim.from[0])*e; S.pitch=camAnim.from[1]+(camAnim.to[1]-camAnim.from[1])*e;
+      if(u>=1) camAnim=null; dirty=true;
+    }
+    if(S.playing){
+      const dt = lastFrame==null?0:Math.min(0.05,(now-lastFrame)/1000); lastFrame=now; simT+=dt; S.alpha+=OMEGA_SIM*dt;
+      if(simT-lastLaunch>0.22){ lastLaunch=simT; parcels.push({t0:simT, phi:S.alpha}); }
+      const Vsim=(S.v/AU_KM)*(OMEGA_SIM/OMEGA); parcels=parcels.filter(P=>(simT-P.t0)*Vsim<=S.rmax);
+      dirty=true;
+    }
+    if(dirty){ dirty=false; draw(); }
+    requestAnimationFrame(frame);
+  }
+
+  readColors(); resize(); updateReadouts();
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{dirty=true;});
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
